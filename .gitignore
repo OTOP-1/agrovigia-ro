@@ -1,9 +1,0 @@
-# Fotos enviadas pelos usuários e log de alertas (contém telefones)
-uploads/ocorrencias/
-uploads/*.log
-
-# Arquivos de sistema e editores
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
