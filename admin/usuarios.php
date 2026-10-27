@@ -106,7 +106,7 @@ require __DIR__ . '/../includes/header.php';
                         <button type="submit" class="link-botao"><?= $u['ativo'] ? 'desativar' : 'reativar' ?></button>
                     </form>
                     <form method="post" action="<?= BASE_URL ?>/admin/usuario_excluir.php" class="inline-form"
-                          onsubmit="return confirm('Excluir DEFINITIVAMENTE o perfil de <?= htmlspecialchars(addslashes($u['nome']), ENT_QUOTES) ?> e todas as propriedades, talhões e ocorrências dele?')">
+                          onsubmit="return confirm('Excluir DEFINITIVAMENTE esta conta e todos os dados associados?')">
                         <?= csrfCampo() ?>
                         <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
                         <button type="submit" class="link-botao link-perigo">excluir</button>

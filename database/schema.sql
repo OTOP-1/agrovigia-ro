@@ -14,10 +14,8 @@
 -- CREATE DATABASE IF NOT EXISTS agrovigia_ro CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- USE agrovigia_ro;
 --
--- DADOS INICIAIS (todos FICTÍCIOS, só para teste):
---   admin@agrovigia.com   senha admin123   (administrador)
---   produtor@teste.com    senha 123456     (produtor, com 1 propriedade e 2 talhões)
--- Troque a senha do administrador logo no primeiro acesso (menu "Meu perfil").
+-- SEGURANÇA: esta versão não cria senhas, contas admin ou dados de produtores fictícios.
+-- Cadastre sua conta pela interface e promova-a no phpMyAdmin do SEU banco.
 -- ============================================================
 
 -- ------------------------------------------------------------
@@ -28,7 +26,7 @@ CREATE TABLE produtores (
     nome VARCHAR(120) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     senha_hash VARCHAR(255) NOT NULL,
-    telefone VARCHAR(20) NOT NULL COMMENT 'usado para alertas via WhatsApp/SMS',
+    telefone VARCHAR(20) NOT NULL COMMENT 'contato do produtor, sem envio automatico nesta versao',
     municipio VARCHAR(100) NOT NULL,
     perfil ENUM('produtor','admin') NOT NULL DEFAULT 'produtor' COMMENT 'admin gerencia todos os perfis',
     ativo TINYINT(1) NOT NULL DEFAULT 1 COMMENT '0 = conta desativada, não consegue logar',
@@ -78,11 +76,11 @@ CREATE TABLE ocorrencias (
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
--- Alertas disparados (log dos avisos enviados aos vizinhos/técnico)
+-- Alertas internos simulados (nenhuma mensagem externa enviada)
 -- ------------------------------------------------------------
 CREATE TABLE alertas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    ocorrencia_origem_id INT NOT NULL COMMENT 'ocorrência que disparou o alerta',
+    ocorrencia_origem_id INT NOT NULL COMMENT 'ocorrencia que gerou o registro interno de alerta',
     municipio VARCHAR(100) NOT NULL,
     quantidade_ocorrencias INT NOT NULL COMMENT 'quantas ocorrências geraram esse alerta',
     canal ENUM('whatsapp','sms') NOT NULL DEFAULT 'whatsapp',
@@ -91,19 +89,3 @@ CREATE TABLE alertas (
     enviado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ocorrencia_origem_id) REFERENCES ocorrencias(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
--- ------------------------------------------------------------
--- Dados de exemplo (opcional, útil para testar o CRUD e o mapa)
--- ------------------------------------------------------------
-INSERT INTO produtores (nome, email, senha_hash, telefone, municipio, perfil) VALUES
-('Produtor Teste', 'produtor@teste.com', '$2y$12$grKwzDQFuM0kR/GG3hIJ7eFxybC.RzITqhxtf3S9r//FLy8.mtJne', '69999990000', 'Ouro Preto do Oeste', 'produtor'),
-('Administrador', 'admin@agrovigia.com', '$2y$12$u89iJvTCGYIDfywdGAkscu96t2uVsBr.IjPwfozHrlRbrkcKbl7xK', '69999991111', 'Porto Velho', 'admin');
--- senha do produtor de teste: 123456
--- senha do administrador:     admin123  (TROQUE no primeiro login, em "Meu perfil")
-
-INSERT INTO propriedades (produtor_id, nome, municipio, latitude, longitude) VALUES
-(1, 'Sítio Boa Esperança', 'Ouro Preto do Oeste', -10.7500, -62.2167);
-
-INSERT INTO talhoes (propriedade_id, nome, cultura, area_hectares) VALUES
-(1, 'Talhão 1 - Cacau', 'cacau', 3.50),
-(1, 'Talhão 2 - Café', 'café', 2.00);

@@ -19,7 +19,10 @@
                 <a href="<?= BASE_URL ?>/admin/index.php" class="link-admin">Administração</a>
             <?php endif; ?>
             <a href="<?= BASE_URL ?>/perfil/editar.php" class="usuario">Meu perfil (<?= htmlspecialchars($_SESSION['produtor_nome']) ?>)</a>
-            <a href="<?= BASE_URL ?>/logout.php">Sair</a>
+            <form method="post" action="<?= BASE_URL ?>/logout.php" class="nav-logout">
+                <?= csrfCampo() ?>
+                <button type="submit">Sair</button>
+            </form>
         </nav>
     <?php endif; ?>
 </header>

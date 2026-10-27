@@ -44,8 +44,9 @@ require __DIR__ . '/../includes/header.php';
                 |
                 <a href="<?= BASE_URL ?>/talhoes/editar.php?id=<?= $t['id'] ?>">editar</a>
                 |
-                <a href="<?= BASE_URL ?>/talhoes/excluir.php?id=<?= $t['id'] ?>&propriedade_id=<?= $propriedadeId ?>"
-                   onclick="return confirm('Excluir este talhão e suas ocorrências?')">excluir</a>
+                <form method="post" action="<?= BASE_URL ?>/talhoes/excluir.php" class="inline-form" onsubmit="return confirm('Excluir este talhão e suas ocorrências?')">
+                    <?= csrfCampo() ?><input type="hidden" name="id" value="<?= (int)$t['id'] ?>"><input type="hidden" name="propriedade_id" value="<?= (int)$propriedadeId ?>"><button type="submit" class="link-botao link-perigo">excluir</button>
+                </form>
             </td>
         </tr>
     <?php endforeach; ?>

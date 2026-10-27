@@ -105,3 +105,15 @@ Primeira versão do sistema, gerada a partir do rascunho do formulário do Cente
   uma única função para ser trocado depois pela API real.
 - **Decisão — segurança básica desde o início:** senhas com hash, consultas parametrizadas (PDO), conferência
   de que cada registro pertence ao usuário logado e bloqueio de execução de PHP na pasta de uploads.
+
+
+## Adaptação do ZIP para InfinityFree (27/10/2026)
+
+- Criado `database/hosting.sql`, sem `CREATE DATABASE`, `USE`, contas/credenciais predefinidas ou inserts de demonstração.
+- Criado `.env.example` verdadeiro, `DB_PORT`, `APP_BASE_URL` configurável na raiz do domínio e proteção `.htaccess` para arquivos sensíveis.
+- Todas as alterações de dados passam por POST + CSRF; exclusões via GET substituídas por formulários POST.
+- Cadastro e senha inicial exigem mínimo de 10 caracteres; administração inicial via promoção explícita da conta própria no phpMyAdmin (não existe administrador padrão público).
+- Upload JPG/PNG/WEBP por conteúdo, até 2 MB e com nome aleatório, protegendo a pasta para não executar arquivos de script.
+- Corrigida inserção de HTML não escapado no mapa e removido o log público com telefones; alertas continuam **simulados** no banco, sem notificação por WhatsApp real.
+- Versão de deploy separada da documentação/SQL e do arquivo `.env`; sem modificar o banco existente automaticamente.
+- Testes automáticos de sintaxe PHP e smoke HTTP local; teste funcional MySQL/InfinityFree pendente de execução na hospedagem.

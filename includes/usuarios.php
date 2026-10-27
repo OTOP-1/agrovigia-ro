@@ -6,7 +6,7 @@
 
 require_once __DIR__ . '/../config/config.php';
 
-const SENHA_TAMANHO_MINIMO = 6;
+const SENHA_TAMANHO_MINIMO = 10;
 
 /** Deixa só os dígitos do telefone (o sistema de alertas usa esse formato). */
 function normalizarTelefone(string $telefone): string
@@ -46,8 +46,8 @@ function validarDadosUsuario(array $dados, string $senha = '', bool $senhaObriga
     }
 
     if ($senhaObrigatoria || $senha !== '') {
-        if (strlen($senha) < SENHA_TAMANHO_MINIMO) {
-            $erros[] = 'A senha deve ter pelo menos ' . SENHA_TAMANHO_MINIMO . ' caracteres.';
+        if (strlen($senha) < SENHA_TAMANHO_MINIMO || strlen($senha) > 72) {
+            $erros[] = 'A senha deve ter entre ' . SENHA_TAMANHO_MINIMO . ' e 72 caracteres.';
         }
     }
 

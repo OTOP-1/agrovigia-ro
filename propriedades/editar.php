@@ -17,10 +17,20 @@ if (!$propriedade) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrfValidar();
     $nome = trim($_POST['nome'] ?? '');
     $municipio = trim($_POST['municipio'] ?? '');
-    $latitude = $_POST['latitude'] !== '' ? $_POST['latitude'] : null;
-    $longitude = $_POST['longitude'] !== '' ? $_POST['longitude'] : null;
+    $latTexto = trim((string)($_POST['latitude'] ?? ''));
+    $lonTexto = trim((string)($_POST['longitude'] ?? ''));
+    $latitude = $latTexto !== '' ? $latTexto : null;
+    $longitude = $lonTexto !== '' ? $lonTexto : null;
+    $coordenadasOk = ($latitude === null || (is_numeric($latitude) && is_finite((float)$latitude) && (float)$latitude >= -90 && (float)$latitude <= 90))
+        && ($longitude === null || (is_numeric($longitude) && is_finite((float)$longitude) && (float)$longitude >= -180 && (float)$longitude <= 180));
+
+    if ($nome === '' || $municipio === '' || mb_strlen($nome) > 120 || mb_strlen($municipio) > 100 || !$coordenadasOk) {
+        mensagemFlash('Verifique nome, município e coordenadas.', 'erro');
+        redirecionar('propriedades/editar.php?id=' . $id);
+    }
 
     $stmtUp = $pdo->prepare(
         'UPDATE propriedades
@@ -43,6 +53,7 @@ require __DIR__ . '/../includes/header.php';
 ?>
 <h1>Editar propriedade</h1>
 <form method="post" class="formulario">
+    <?= csrfCampo() ?>
     <input type="hidden" name="id" value="<?= $propriedade['id'] ?>">
     <label>Nome da propriedade
         <input type="text" name="nome" value="<?= htmlspecialchars($propriedade['nome']) ?>" required>

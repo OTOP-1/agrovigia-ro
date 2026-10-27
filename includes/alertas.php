@@ -1,13 +1,8 @@
 <?php
 /**
- * Núcleo "inovador" do AgroVigia RO.
- *
- * Depois que uma ocorrência é cadastrada (CRUD normal), este arquivo
- * verifica se há uma CONCENTRAÇÃO de ocorrências parecidas no mesmo
- * município dentro de uma janela de tempo curta. Se houver, dispara
- * um alerta automático (aqui simulado em log/arquivo — em produção
- * seria a API do WhatsApp Business ou um gateway de SMS) para os
- * produtores vizinhos e para o técnico da EMATER-RO responsável.
+ * Alertas internos SIMULADOS: conta ocorrências no mesmo município
+ * e registra uma notificação na tabela `alertas`.
+ * Não há envio real de WhatsApp/SMS ou conexão com a EMATER-RO.
  */
 
 require_once __DIR__ . '/../config/config.php';
@@ -36,15 +31,15 @@ function verificarConcentracaoEDispararAlerta(PDO $pdo, int $ocorrenciaId): void
 
     // Conta ocorrências recentes (janela de dias) no mesmo município,
     // olhando por todas as propriedades daquele município (não só a atual).
+    $janelaDias = (int)ALERTA_JANELA_DIAS; // constante interna, nunca entrada do usuário
     $sqlConcentracao = "SELECT COUNT(*) AS total
             FROM ocorrencias o
             JOIN talhoes t ON t.id = o.talhao_id
             JOIN propriedades p ON p.id = t.propriedade_id
             WHERE p.municipio = :municipio
-              AND o.criado_em >= (NOW() - INTERVAL :dias DAY)";
+              AND o.criado_em >= (NOW() - INTERVAL {$janelaDias} DAY)";
     $stmt2 = $pdo->prepare($sqlConcentracao);
     $stmt2->bindValue(':municipio', $municipio);
-    $stmt2->bindValue(':dias', ALERTA_JANELA_DIAS, PDO::PARAM_INT);
     $stmt2->execute();
     $total = (int)$stmt2->fetch()['total'];
 
@@ -52,7 +47,7 @@ function verificarConcentracaoEDispararAlerta(PDO $pdo, int $ocorrenciaId): void
         return; // ainda não atingiu o limite para considerar "concentração"
     }
 
-    // Busca produtores do mesmo município para notificar como "vizinhos"
+    // Produtores do mesmo município para registrar alertas internos (não há envio).
     $sqlVizinhos = "SELECT DISTINCT pr.id, pr.nome, pr.telefone
             FROM produtores pr
             JOIN propriedades p ON p.produtor_id = pr.id
@@ -81,22 +76,12 @@ function verificarConcentracaoEDispararAlerta(PDO $pdo, int $ocorrenciaId): void
             'mensagem'     => $mensagem,
         ]);
 
-        enviarWhatsAppOuSms($vizinho['telefone'], $mensagem);
+        // Envio externo não configurado: registros ficam na tabela alertas.
     }
 }
 
 /**
- * STUB de envio real. Aqui apenas registramos em log.
- * Em produção, substituir pela chamada à API do WhatsApp Business
- * (ou Twilio/gateway de SMS), usando as credenciais do provedor.
+ * Os alertas são SIMULADOS e registrados no banco. Não enviamos WhatsApp/SMS
+ * nem gravamos telefones em logs do diretório público da hospedagem.
+ * Integração com serviço externo exigiria consentimento e configuração adicional.
  */
-function enviarWhatsAppOuSms(string $telefone, string $mensagem): void
-{
-    $linha = sprintf(
-        "[%s] Para %s: %s\n",
-        date('Y-m-d H:i:s'),
-        $telefone,
-        $mensagem
-    );
-    file_put_contents(__DIR__ . '/../uploads/alertas_enviados.log', $linha, FILE_APPEND);
-}

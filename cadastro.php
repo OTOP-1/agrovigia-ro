@@ -4,6 +4,7 @@ require_once __DIR__ . '/config/config.php';
 $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrfValidar();
     $nome = trim($_POST['nome'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $telefone = trim($_POST['telefone'] ?? '');
@@ -12,6 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($nome === '' || $email === '' || $telefone === '' || $municipio === '' || $senha === '') {
         $erro = 'Preencha todos os campos.';
+    } elseif (mb_strlen($nome) < 3 || mb_strlen($nome) > 120 || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email)>150 || mb_strlen($municipio)>100) {
+        $erro = 'Confira o nome, município e endereço de e-mail.';
+    } elseif (strlen(preg_replace('/\D+/', '', $telefone)) < 10 || strlen(preg_replace('/\D+/', '', $telefone)) > 13) {
+        $erro = 'Informe telefone com DDD (10 a 13 dígitos).';
+    } elseif (strlen($senha) < 10 || strlen($senha) > 72) {
+        $erro = 'Use uma senha de 10 a 72 caracteres.';
     } else {
         $pdo = conectarBanco();
         $stmt = $pdo->prepare(
@@ -23,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'nome' => $nome,
                 'email' => $email,
                 'senha_hash' => password_hash($senha, PASSWORD_DEFAULT),
-                'telefone' => $telefone,
+                'telefone' => preg_replace('/\D+/', '', $telefone),
                 'municipio' => $municipio,
             ]);
             mensagemFlash('Cadastro realizado! Faça login para continuar.');
@@ -41,6 +48,7 @@ require __DIR__ . '/includes/header.php';
     <div class="alerta alerta-erro"><?= htmlspecialchars($erro) ?></div>
 <?php endif; ?>
 <form method="post" class="formulario">
+    <?= csrfCampo() ?>
     <label>Nome completo
         <input type="text" name="nome" required>
     </label>
@@ -54,7 +62,7 @@ require __DIR__ . '/includes/header.php';
         <input type="text" name="municipio" required>
     </label>
     <label>Senha
-        <input type="password" name="senha" required>
+        <input type="password" name="senha" minlength="10" maxlength="72" autocomplete="new-password" required>
     </label>
     <button type="submit">Cadastrar</button>
 </form>

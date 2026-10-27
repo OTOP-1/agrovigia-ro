@@ -56,8 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!password_verify($senhaAtual, $hashAtual)) {
             $errosSenha[] = 'A senha atual está incorreta.';
         }
-        if (strlen($novaSenha) < SENHA_TAMANHO_MINIMO) {
-            $errosSenha[] = 'A nova senha deve ter pelo menos ' . SENHA_TAMANHO_MINIMO . ' caracteres.';
+        if (strlen($novaSenha) < SENHA_TAMANHO_MINIMO || strlen($novaSenha) > 72) {
+            $errosSenha[] = 'A nova senha deve ter de ' . SENHA_TAMANHO_MINIMO . ' a 72 caracteres.';
         }
         if ($novaSenha !== $confirmacao) {
             $errosSenha[] = 'A confirmação não é igual à nova senha.';

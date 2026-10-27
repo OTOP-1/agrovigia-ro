@@ -20,10 +20,17 @@ if (!$talhao) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrfValidar();
     $nome = trim($_POST['nome'] ?? '');
     $cultura = trim($_POST['cultura'] ?? '');
-    $area = $_POST['area_hectares'] !== '' ? $_POST['area_hectares'] : null;
+    $areaTexto = trim((string)($_POST['area_hectares'] ?? ''));
+    $area = $areaTexto !== '' ? $areaTexto : null;
+    $areaOk = $area === null || (is_numeric($area) && is_finite((float)$area) && (float)$area > 0 && (float)$area <= 999999);
 
+    if ($nome === '' || $cultura === '' || mb_strlen($nome) > 80 || mb_strlen($cultura) > 80 || !$areaOk) {
+        mensagemFlash('Verifique nome, cultura e área em hectares.', 'erro');
+        redirecionar('talhoes/editar.php?id=' . $id);
+    }
     $stmtUp = $pdo->prepare(
         'UPDATE talhoes SET nome = :nome, cultura = :cultura, area_hectares = :area WHERE id = :id'
     );
@@ -36,6 +43,7 @@ require __DIR__ . '/../includes/header.php';
 ?>
 <h1>Editar talhão</h1>
 <form method="post" class="formulario">
+    <?= csrfCampo() ?>
     <input type="hidden" name="id" value="<?= $talhao['id'] ?>">
     <label>Nome do talhão
         <input type="text" name="nome" value="<?= htmlspecialchars($talhao['nome']) ?>" required>

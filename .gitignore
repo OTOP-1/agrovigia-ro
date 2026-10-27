@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+uploads/ocorrencias/*
+!uploads/ocorrencias/.htaccess
+!uploads/ocorrencias/index.html
+*.log
+*.bak
+*.zip
+.DS_Store
+.idea/
+.vscode/

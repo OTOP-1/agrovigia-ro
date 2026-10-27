@@ -15,15 +15,16 @@ function conectarBanco(): PDO
     $nome    = env('DB_NAME');
     $usuario = env('DB_USER');
     $senha   = env('DB_PASS', '');
+    $porta   = env('DB_PORT', '3306');
 
-    if ($host === null || $nome === null || $usuario === null) {
+    if (!$host || !$nome || !$usuario || !$porta || !ctype_digit($porta) || (int)$porta < 1 || (int)$porta > 65535) {
         http_response_code(500);
         die('Configuração do banco ausente. Copie o arquivo .env.example para .env e preencha '
           . 'DB_HOST, DB_NAME, DB_USER e DB_PASS (veja a seção "Instalação e execução" do spec.md).');
     }
 
     try {
-        $dsn = 'mysql:host=' . $host . ';dbname=' . $nome . ';charset=utf8mb4';
+        $dsn = 'mysql:host=' . $host . ';port=' . $porta . ';dbname=' . $nome . ';charset=utf8mb4';
         $opcoes = [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

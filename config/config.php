@@ -8,15 +8,20 @@ require_once __DIR__ . '/env.php';
 // Erros detalhados só em desenvolvimento (APP_DEBUG=1 no .env). Online: sempre 0.
 define('APP_DEBUG', in_array(strtolower((string)env('APP_DEBUG', '0')), ['1', 'true', 'on', 'yes'], true));
 ini_set('display_errors', APP_DEBUG ? '1' : '0');
+ini_set('log_errors', '1');
+if (!APP_DEBUG) error_reporting(E_ALL);
 if (APP_DEBUG) {
     error_reporting(E_ALL);
 }
 
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.use_strict_mode', '1');
     session_set_cookie_params([
         'httponly' => true,                       // JavaScript não lê o cookie de sessão
         'samesite' => 'Lax',                      // não é enviado em requisições de outros sites
-        'secure'   => !empty($_SERVER['HTTPS']),  // só por HTTPS quando o site usa HTTPS
+        'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                      || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https'),  // só por HTTPS quando o site usa HTTPS
     ]);
     session_start();
 }
@@ -90,13 +95,13 @@ function csrfToken(): string
 
 function csrfCampo(): string
 {
-    return '<input type="hidden" name="csrf" value="' . csrfToken() . '">';
+    return '<input type="hidden" name="csrf" value="' . htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8') . '">';
 }
 
 function csrfValidar(): void
 {
     $enviado = $_POST['csrf'] ?? '';
-    if (!is_string($enviado) || !hash_equals($_SESSION['csrf'] ?? '', $enviado)) {
+    if (!is_string($enviado) || empty($_SESSION['csrf']) || !hash_equals($_SESSION['csrf'], $enviado)) {
         http_response_code(400);
         die('Requisição inválida (token CSRF). Volte, recarregue a página e tente de novo.');
     }
@@ -111,4 +116,27 @@ function redirecionar(string $caminho): void
 function mensagemFlash(string $texto, string $tipo = 'sucesso'): void
 {
     $_SESSION['flash'] = ['texto' => $texto, 'tipo' => $tipo];
+}
+
+/** Verifica coordenadas decimais sem aceitar valores fora do planeta. */
+function coordenadaOpcional(?string $valor, bool $latitude): ?string
+{
+    $valor = trim((string)$valor);
+    if ($valor === '') return null;
+    $n = filter_var($valor, FILTER_VALIDATE_FLOAT);
+    $limite = $latitude ? 90 : 180;
+    if ($n === false || $n < -$limite || $n > $limite) {
+        throw new InvalidArgumentException($latitude ? 'Latitude inválida.' : 'Longitude inválida.');
+    }
+    return (string)$n;
+}
+
+function areaOpcional(?string $valor): ?string
+{
+    $valor=trim((string)$valor);
+    if ($valor === '') return null;
+    if (!is_numeric($valor) || !is_finite((float)$valor) || (float)$valor <= 0 || (float)$valor > 999999) {
+        throw new InvalidArgumentException('Área inválida: informe um número de hectares positivo.');
+    }
+    return (string)(float)$valor;
 }

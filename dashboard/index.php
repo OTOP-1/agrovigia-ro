@@ -52,6 +52,7 @@ require __DIR__ . '/../includes/header.php';
 <canvas id="graficoOcorrencias" height="100"></canvas>
 
 <h2>Alertas recentes na sua região</h2>
+<p class="subtitulo">Alertas demonstrativos registrados no banco. O sistema não envia mensagens reais por WhatsApp ou SMS.</p>
 <table class="tabela">
     <thead>
         <tr><th>Município</th><th>Ocorrências que geraram o alerta</th><th>Data</th></tr>
@@ -75,9 +76,13 @@ require __DIR__ . '/../includes/header.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 <script>
-const pontos = <?= json_encode($pontos) ?>;
-const dadosGrafico = <?= json_encode($grafico) ?>;
+const pontos = <?= json_encode($pontos, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+const dadosGrafico = <?= json_encode($grafico, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
+// O conteúdo das ocorrências é fornecido pelos usuários e não deve virar HTML.
+function limparHtml(texto) {
+    return String(texto ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+}
 // ---- Mapa ----
 const mapa = L.map('mapa').setView([-10.9472, -62.8182], 7); // centro aproximado de Rondônia
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -87,7 +92,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 pontos.forEach(p => {
     L.marker([parseFloat(p.latitude), parseFloat(p.longitude)])
         .addTo(mapa)
-        .bindPopup(`<strong>${p.talhao_nome}</strong><br>${p.sintoma_descricao}<br><small>${p.criado_em}</small>`);
+        .bindPopup(`<strong>${limparHtml(p.talhao_nome)}</strong><br>${limparHtml(p.sintoma_descricao)}<br><small>${limparHtml(p.criado_em)}</small>`);
 });
 
 // ---- Gráfico ----

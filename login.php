@@ -8,6 +8,7 @@ if (isset($_SESSION['produtor_id'])) {
 $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrfValidar();
     $email = trim($_POST['email'] ?? '');
     $senha = $_POST['senha'] ?? '';
 
@@ -43,6 +44,7 @@ require __DIR__ . '/includes/header.php';
     <div class="alerta alerta-erro"><?= htmlspecialchars($erro) ?></div>
 <?php endif; ?>
 <form method="post" class="formulario">
+    <?= csrfCampo() ?>
     <label>E-mail
         <input type="email" name="email" required>
     </label>

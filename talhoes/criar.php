@@ -15,12 +15,15 @@ if (!$propriedade) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrfValidar();
     $nome = trim($_POST['nome'] ?? '');
     $cultura = trim($_POST['cultura'] ?? '');
-    $area = $_POST['area_hectares'] !== '' ? $_POST['area_hectares'] : null;
+    $areaTexto = trim((string)($_POST['area_hectares'] ?? ''));
+    $area = $areaTexto !== '' ? $areaTexto : null;
+    $areaOk = $area === null || (is_numeric($area) && is_finite((float)$area) && (float)$area > 0 && (float)$area <= 999999);
 
-    if ($nome === '' || $cultura === '') {
-        mensagemFlash('Preencha nome e cultura do talhão.', 'erro');
+    if ($nome === '' || $cultura === '' || mb_strlen($nome) > 80 || mb_strlen($cultura) > 80 || !$areaOk) {
+        mensagemFlash('Verifique nome, cultura e área em hectares.', 'erro');
     } else {
         $stmt = $pdo->prepare(
             'INSERT INTO talhoes (propriedade_id, nome, cultura, area_hectares)
@@ -41,6 +44,7 @@ require __DIR__ . '/../includes/header.php';
 ?>
 <h1>Novo talhão em <?= htmlspecialchars($propriedade['nome']) ?></h1>
 <form method="post" class="formulario">
+    <?= csrfCampo() ?>
     <input type="hidden" name="propriedade_id" value="<?= $propriedadeId ?>">
     <label>Nome do talhão
         <input type="text" name="nome" placeholder="Talhão 1" required>

@@ -42,7 +42,7 @@ require __DIR__ . '/../includes/header.php';
     <?php foreach ($ocorrencias as $o): ?>
         <div class="ocorrencia-card">
             <?php if ($o['foto']): ?>
-                <img src="<?= UPLOAD_URL . htmlspecialchars($o['foto']) ?>" alt="Foto da ocorrência">
+                <img src="<?= UPLOAD_URL . rawurlencode(basename((string)$o['foto'])) ?>" alt="Foto da ocorrência">
             <?php endif; ?>
             <div class="ocorrencia-info">
                 <strong><?= htmlspecialchars($o['talhao_nome']) ?></strong>
@@ -52,8 +52,9 @@ require __DIR__ . '/../includes/header.php';
                 <div class="acoes">
                     <a href="<?= BASE_URL ?>/ocorrencias/editar.php?id=<?= $o['id'] ?>">editar</a>
                     |
-                    <a href="<?= BASE_URL ?>/ocorrencias/excluir.php?id=<?= $o['id'] ?>"
-                       onclick="return confirm('Excluir esta ocorrência?')">excluir</a>
+                    <form method="post" action="<?= BASE_URL ?>/ocorrencias/excluir.php" class="inline-form" onsubmit="return confirm('Excluir esta ocorrência?')">
+                        <?= csrfCampo() ?><input type="hidden" name="id" value="<?= (int)$o['id'] ?>"><button type="submit" class="link-botao link-perigo">excluir</button>
+                    </form>
                 </div>
             </div>
         </div>

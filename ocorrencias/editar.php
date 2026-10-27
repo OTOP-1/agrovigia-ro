@@ -20,8 +20,13 @@ if (!$ocorrencia) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrfValidar();
     $descricao = trim($_POST['sintoma_descricao'] ?? '');
-    $status = $_POST['status'] ?? 'nova';
+    $status = (string)($_POST['status'] ?? 'nova');
+    if ($descricao === '' || mb_strlen($descricao) > 5000 || !in_array($status, ['nova','em_analise','confirmada','resolvida'], true)) {
+        mensagemFlash('Descrição ou status inválido.', 'erro');
+        redirecionar('ocorrencias/editar.php?id=' . $id);
+    }
 
     $stmtUp = $pdo->prepare(
         'UPDATE ocorrencias SET sintoma_descricao = :descricao, status = :status WHERE id = :id'
@@ -35,9 +40,10 @@ require __DIR__ . '/../includes/header.php';
 ?>
 <h1>Editar ocorrência</h1>
 <form method="post" class="formulario">
+    <?= csrfCampo() ?>
     <input type="hidden" name="id" value="<?= $ocorrencia['id'] ?>">
     <label>Descrição do sintoma
-        <textarea name="sintoma_descricao" rows="4" required><?= htmlspecialchars($ocorrencia['sintoma_descricao']) ?></textarea>
+        <textarea name="sintoma_descricao" rows="4" maxlength="5000" required><?= htmlspecialchars($ocorrencia['sintoma_descricao']) ?></textarea>
     </label>
     <label>Status
         <select name="status">

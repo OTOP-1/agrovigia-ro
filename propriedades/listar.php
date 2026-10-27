@@ -35,8 +35,9 @@ require __DIR__ . '/../includes/header.php';
             <td>
                 <a href="<?= BASE_URL ?>/propriedades/editar.php?id=<?= $p['id'] ?>">editar</a>
                 |
-                <a href="<?= BASE_URL ?>/propriedades/excluir.php?id=<?= $p['id'] ?>"
-                   onclick="return confirm('Excluir esta propriedade e todos os talhões/ocorrências dela?')">excluir</a>
+                <form method="post" action="<?= BASE_URL ?>/propriedades/excluir.php" class="inline-form" onsubmit="return confirm('Excluir esta propriedade e todos os talhões e ocorrências dela?')">
+                    <?= csrfCampo() ?><input type="hidden" name="id" value="<?= (int)$p['id'] ?>"><button type="submit" class="link-botao link-perigo">excluir</button>
+                </form>
             </td>
         </tr>
     <?php endforeach; ?>
